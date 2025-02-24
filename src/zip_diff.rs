@@ -86,7 +86,7 @@ pub fn compare_zip_files(zip1: &str, zip2: &str) -> Result<Vec<FileDifference>, 
         println!("✅ ZIPs are identical, skipping diff.");
         return Ok(vec![]);
     }
-    
+
     // Step 2: Extract filenames and compute file hashes
     let files1 = extract_filenames_and_hashes(zip1)?;
     let files2 = extract_filenames_and_hashes(zip2)?;
@@ -206,4 +206,3 @@ fn extract_file_content(zip_path: &str, filename: &str) -> Result<String, String
 
     Err(format!("File {} not found in {}", filename, zip_path))
 }
-

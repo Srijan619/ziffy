@@ -1,34 +1,100 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zip Diff Viewer</title>
+    <style>
+        body {
+            background-color: #23292b;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+        }
+        form {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        input, button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        input {
+            background-color: #333;
+            color: white;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        pre {
+            background-color: #1e1e1e;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            text-align: left;
+            overflow-x: auto;
+        }
+    </style>
 </head>
 <body>
-    <h1>Zip Diff Viewer</h1>
-    <form action="http://127.0.0.1:8000/upload" method="post" enctype="multipart/form-data">
-        <label for="file-upload">Upload Zip File:</label>
-        <input type="file" multiple name="file" id="file-upload" accept=".zip" />
-        <button type="submit">Upload</button>
-    </form>
-
-    <div id="result"></div>
+    <div class="container">
+        <h1>Zip Diff Viewer</h1>
+        <form id="upload-form" action="http://127.0.0.1:8000/upload" method="post" enctype="multipart/form-data">
+            <label for="file-upload">Upload Zip Files:</label>
+            <input type="file" name="files" id="file-upload" accept=".zip" multiple required />
+            <button type="submit">Upload</button>
+        </form>
+        <pre id="result">Waiting for results...</pre>
+    </div>
 
     <script>
-        const form = document.querySelector('form');
+        const form = document.querySelector('#upload-form');
         form.onsubmit = async (e) => {
             e.preventDefault();
-            const formData = new FormData(form);
-            const response = await fetch('http://127.0.0.1:8000/upload', {
-                method: 'POST',
-                body: formData
-            });
+            const formData = new FormData();
 
-          console.log("Response..", response)
-            const result = await response.text();
-            document.getElementById('result').textContent = result;
+            const files = document.getElementById('file-upload').files;
+            
+            if (files.length !== 2) {
+                alert("Please select exactly two ZIP files.");
+                return;
+            }
+
+            formData.append("file1", files[0]); // First file
+            formData.append("file2", files[1]); // Second file
+
+            const resultElement = document.getElementById('result');
+            resultElement.textContent = "Processing...";
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+                resultElement.textContent = JSON.stringify(result, null, 2); // Pretty print JSON
+            } catch (error) {
+                resultElement.textContent = "Error processing request: " + error.message;
+            }
         };
     </script>
 </body>
