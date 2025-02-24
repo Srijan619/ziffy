@@ -2,12 +2,13 @@
 extern crate rocket;
 
 use rocket::form::{Form, FromForm};
-use rocket::fs::{FileServer, NamedFile, TempFile};
+use rocket::fs::{FileServer, NamedFile, TempFile, relative};
 use rocket::serde::json::Json;
+use std::path::{Path, PathBuf};
 use std::time::Instant;
+use zip_diff::{FileDifference, compare_zip_files};
 
 mod zip_diff;
-use zip_diff::{FileDifference, compare_zip_files};
 
 #[derive(FromForm)]
 struct UploadForm<'r> {
@@ -61,17 +62,24 @@ async fn upload(
     }
 }
 
-#[get("/")]
-async fn index() -> Option<NamedFile> {
-    NamedFile::open("static/index.html").await.ok()
+
+#[get("/<path..>")]
+async fn serve(mut path: PathBuf) -> Option<NamedFile> {
+    path.set_extension("html");
+    let mut path = Path::new(relative!("assets")).join(path);
+    if path.is_dir() {
+        path.push("index.html");
+    }
+
+    NamedFile::open(path).await.ok()
 }
 
-// Local development mode
+// Local mode
 #[cfg(not(feature = "shuttle"))]
 #[launch]
 fn rocket() -> _ {
     rocket::build()
-        .mount("/", routes![index, upload])
+        .mount("/", routes![serve, upload])
         .mount("/static", FileServer::from("static"))
 }
 
@@ -80,7 +88,7 @@ fn rocket() -> _ {
 #[shuttle_runtime::main]
 async fn main() -> shuttle_rocket::ShuttleRocket {
     let rocket = rocket::build()
-        .mount("/", routes![index, upload])
+        .mount("/", routes![serve, upload])
         .mount("/static", FileServer::from("static"));
 
     Ok(rocket.into())

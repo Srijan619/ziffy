@@ -18,9 +18,5 @@ rustc-hash = "2.1.1"
 version = "0.5.1"
 features = ["json"]
 
-[package.metadata.shuttle]
-static = "static"
-
-
 [features]
 shuttle = []
