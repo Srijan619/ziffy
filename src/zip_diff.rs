@@ -1,6 +1,6 @@
 use diff::{Result as DiffResult, lines};
 use rayon::prelude::*;
-use rocket::serde::Serialize;
+use rocket::serde::{Deserialize, Serialize};
 use rustc_hash::FxHasher;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
@@ -10,7 +10,7 @@ use std::sync::Mutex;
 use std::time::Instant;
 use zip::read::ZipArchive;
 
-#[derive(Serialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct FileDifference {
     filename: String,

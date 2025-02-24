@@ -601,9 +601,9 @@ dependencies = [
 
 [[package]]
 name = "flate2"
-version = "1.0.35"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c936bfdafb507ebbf50b8074c54fa31c5be9a1e7e5f467dd659697041407d07c"
+checksum = "11faaf5a5236997af9848be0bef4db95824b1d534ebc64d0f0c6cf3e67bd38dc"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
@@ -796,20 +796,6 @@ name = "hashbrown"
 version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf151400ff0baff5465007dd2f3e717f3fe502074ca563069ce3a6629d07b289"
-
-[[package]]
-name = "hello-rocket"
-version = "0.1.0"
-dependencies = [
- "async-std",
- "diff",
- "fxhash",
- "rayon",
- "rocket",
- "rustc-hash",
- "tokio",
- "zip",
-]
 
 [[package]]
 name = "hermit-abi"
@@ -2338,6 +2324,20 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "ziffy"
+version = "0.1.0"
+dependencies = [
+ "async-std",
+ "diff",
+ "fxhash",
+ "rayon",
+ "rocket",
+ "rustc-hash",
+ "tokio",
+ "zip",
 ]
 
 [[package]]
