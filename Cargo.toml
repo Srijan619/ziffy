@@ -10,8 +10,14 @@ async-std = "1.10"
 diff = "0.1.13"
 rayon = "1.10.0"
 fxhash = "0.2.1"
+shuttle-rocket = "0.52.0"
+shuttle-runtime = "0.52.0"
 rustc-hash = "2.1.1"
 
 [dependencies.rocket]
 version = "0.5.1"
 features = ["json"]
+
+
+[features]
+shuttle = []
