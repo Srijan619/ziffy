@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zip Diff Viewer</title>
+    <title>Ziffy</title>
     <style>
         body {
             background-color: #23292b;
@@ -13,13 +12,11 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             margin: 0;
         }
         .container {
             text-align: center;
             width: 100%;
-            max-width: 600px;
         }
         form {
             margin-top: 20px;
@@ -41,9 +38,57 @@
             background-color: #007bff;
             color: white;
             cursor: pointer;
+            position: relative; /* Added for positioning */
+            overflow: hidden; /* Ensure the overlay stays within button */
         }
         button:hover {
             background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #0056b3; /* Slightly darker when disabled */
+            cursor: not-allowed; /* Change cursor to indicate disabled state */
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3; /* Light grey */
+            border-top: 4px solid #3498db; /* Blue */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #444;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+        }
+        .diff-added {
+            color: #28a745; /* Green for added lines */
+        }
+        .diff-removed {
+            color: #dc3545; /* Red for removed lines */
         }
         pre {
             background-color: #1e1e1e;
@@ -61,19 +106,36 @@
         <form id="upload-form" action="http://127.0.0.1:8000/upload" method="post" enctype="multipart/form-data">
             <label for="file-upload">Upload Zip Files:</label>
             <input type="file" name="files" id="file-upload" accept=".zip" multiple required />
-            <button type="submit">Upload</button>
+            <button type="submit" id="upload-button">Upload
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="loading-spinner"></div>
+                </div>
+            </button>
         </form>
-        <pre id="result">Waiting for results...</pre>
+        <table id="result-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Status</th>
+                    <th>Content Diff</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <pre id="result" style="display:none;">Waiting for results...</pre>
     </div>
 
     <script>
         const form = document.querySelector('#upload-form');
+        const uploadButton = document.querySelector('#upload-button');
+        const loadingOverlay = document.querySelector('#loading-overlay');
+
         form.onsubmit = async (e) => {
             e.preventDefault();
             const formData = new FormData();
 
             const files = document.getElementById('file-upload').files;
-            
+
             if (files.length !== 2) {
                 alert("Please select exactly two ZIP files.");
                 return;
@@ -83,7 +145,15 @@
             formData.append("file2", files[1]); // Second file
 
             const resultElement = document.getElementById('result');
+            const resultTable = document.getElementById('result-table');
+            const tableBody = resultTable.querySelector('tbody');
             resultElement.textContent = "Processing...";
+            resultTable.style.display = "none";
+            tableBody.innerHTML = ""; // Clear previous results
+
+            // Disable the upload button and show loading overlay
+            uploadButton.disabled = true;
+            loadingOverlay.style.display = 'flex';
 
             try {
                 const response = await fetch('/upload', {
@@ -92,13 +162,50 @@
                 });
 
                 const result = await response.json();
-                resultElement.textContent = JSON.stringify(result, null, 2); // Pretty print JSON
+                resultElement.style.display = "none";
+                resultTable.style.display = "table"; // Show the table
+
+                // Populate the table with results
+                result.forEach(item => {
+                    const row = document.createElement('tr');
+
+                    const filenameCell = document.createElement('td');
+                    filenameCell.textContent = item.filename;
+                    row.appendChild(filenameCell);
+
+                    const statusCell = document.createElement('td');
+                    statusCell.textContent = item.status;
+                    row.appendChild(statusCell);
+
+                    const contentDiffCell = document.createElement('td');
+                    if (item.content_diff) {
+                        contentDiffCell.innerHTML = item.content_diff.map(line => {
+                            if (line.startsWith('-')) {
+                                return `<span class="diff-removed">${line}</span>`;
+                            } else if (line.startsWith('+')) {
+                                return `<span class="diff-added">${line}</span>`;
+                            } else {
+                                return line; // Normal lines
+                            }
+                        }).join('<br/>');
+                    } else {
+                        contentDiffCell.textContent = "No changes";
+                    }
+                    row.appendChild(contentDiffCell);
+
+                    tableBody.appendChild(row);
+                });
             } catch (error) {
                 resultElement.textContent = "Error processing request: " + error.message;
+                resultElement.style.display = "block";
+                resultTable.style.display = "none"; // Hide the table on error
+            } finally {
+                // Re-enable the upload button and hide loading overlay
+                uploadButton.disabled = false;
+                loadingOverlay.style.display = 'none';
             }
         };
     </script>
 </body>
 </html>
-
 
