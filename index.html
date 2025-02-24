@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zip Diff Viewer</title>
+</head>
+<body>
+    <h1>Zip Diff Viewer</h1>
+    <form action="http://127.0.0.1:8000/upload" method="post" enctype="multipart/form-data">
+        <label for="file-upload">Upload Zip File:</label>
+        <input type="file" multiple name="file" id="file-upload" accept=".zip" />
+        <button type="submit">Upload</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        const form = document.querySelector('form');
+        form.onsubmit = async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const response = await fetch('http://127.0.0.1:8000/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+          console.log("Response..", response)
+            const result = await response.text();
+            document.getElementById('result').textContent = result;
+        };
+    </script>
+</body>
+</html>
+

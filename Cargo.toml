@@ -1,0 +1,17 @@
+[package]
+name = "hello-rocket"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+zip = "2.2"
+async-std = "1.10"
+diff = "0.1.13"
+rayon = "1.10.0"
+fxhash = "0.2.1"
+rustc-hash = "2.1.1"
+
+[dependencies.rocket]
+version = "0.5.1"
+features = ["json"]
