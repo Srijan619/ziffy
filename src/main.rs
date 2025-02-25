@@ -4,6 +4,7 @@ extern crate rocket;
 use rocket::form::{Form, FromForm};
 use rocket::fs::{FileServer, NamedFile, TempFile, relative};
 use rocket::serde::json::Json;
+use std::env;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 use zip_diff::{FileDifference, compare_zip_files};
@@ -22,26 +23,27 @@ async fn upload(
 ) -> Result<Json<Vec<FileDifference>>, rocket::http::Status> {
     let start_time = Instant::now();
 
-    // Save files temporarily
-    let temp1 = "tmp/temp1.zip";
-    let temp2 = "tmp/temp2.zip";
+    // Get a temporary directory
+    let temp_dir = env::temp_dir();
+    let temp1 = temp_dir.join("temp1.zip");
+    let temp2 = temp_dir.join("temp2.zip");
 
-    if let Err(e) = form.file1.persist_to(temp1).await {
+    if let Err(e) = form.file1.persist_to(&temp1).await {
         eprintln!("❌ Failed to save file1: {}", e);
         return Err(rocket::http::Status::InternalServerError);
     }
 
-    if let Err(e) = form.file2.persist_to(temp2).await {
+    if let Err(e) = form.file2.persist_to(&temp2).await {
         eprintln!("❌ Failed to save file2: {}", e);
         return Err(rocket::http::Status::InternalServerError);
     }
 
     // Perform file diff
-    let result = compare_zip_files(temp1, temp2);
+    let result = compare_zip_files(temp1.to_str().unwrap(), temp2.to_str().unwrap());
 
     // Cleanup temp files
-    let _ = std::fs::remove_file(temp1);
-    let _ = std::fs::remove_file(temp2);
+    let _ = std::fs::remove_file(&temp1);
+    let _ = std::fs::remove_file(&temp2);
 
     match result {
         Ok(diff) => {
