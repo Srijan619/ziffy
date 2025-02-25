@@ -1,1 +1,5 @@
 id = "proj_01JMWZDYMRQNTM3F2YR9HPQ338"
+
+[default]
+limits = { form = "400 MiB", data-form = "400 MiB", data="400 MiB", file="400 MiB" }
+
