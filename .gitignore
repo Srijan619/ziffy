@@ -5,4 +5,3 @@ exports
 .DS_Store
 
 tmp/*
-tmp/
