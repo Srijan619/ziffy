@@ -62,7 +62,6 @@ async fn upload(
     }
 }
 
-
 #[get("/<path..>")]
 async fn serve(mut path: PathBuf) -> Option<NamedFile> {
     path.set_extension("html");
@@ -78,18 +77,14 @@ async fn serve(mut path: PathBuf) -> Option<NamedFile> {
 #[cfg(not(feature = "shuttle"))]
 #[launch]
 fn rocket() -> _ {
-    rocket::build()
-        .mount("/", routes![serve, upload])
-        .mount("/static", FileServer::from("static"))
+    rocket::build().mount("/", routes![serve, upload])
 }
 
 // Shuttle deployment mode
 #[cfg(feature = "shuttle")]
 #[shuttle_runtime::main]
 async fn main() -> shuttle_rocket::ShuttleRocket {
-    let rocket = rocket::build()
-        .mount("/", routes![serve, upload])
-        .mount("/static", FileServer::from("static"));
+    let rocket = rocket::build().mount("/", rocket::routes![serve]);
 
     Ok(rocket.into())
 }
