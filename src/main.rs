@@ -84,7 +84,7 @@ fn rocket() -> _ {
 #[cfg(feature = "shuttle")]
 #[shuttle_runtime::main]
 async fn main() -> shuttle_rocket::ShuttleRocket {
-    let rocket = rocket::build().mount("/", rocket::routes![serve]);
+    let rocket = rocket::build().mount("/", rocket::routes![serve, upload]);
 
     Ok(rocket.into())
 }
